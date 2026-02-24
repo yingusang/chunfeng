@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>春风 - 遇事不决，可问春风</title>
+    <meta name="description" content="春风 - 基于六爻占卜的决策辅助工具，遇事不决，可问春风">
+    <meta name="keywords" content="六爻,占卜,易经,决策,春风">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header .slogan {
+            font-size: 18px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .input-section input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .yao-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .yao-line {
+            margin: 8px 0;
+            font-size: 18px;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .yao-symbol {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .changing-mark {
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .result-item p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .conclusion {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .history-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .history-section.show {
+            display: block;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f5576c;
+        }
+
+        .history-time {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .history-question {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .history-result {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .emoji {
+            font-size: 24px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .header .slogan {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 春风 🌸</h1>
+            <p class="slogan">遇事不决，可问春风</p>
+        </div>
+
+        <div class="input-section">
+            <label for="question">💭 请输入你的问题（可选）：</label>
+            <input type="text" id="question" placeholder="例如：今天适合开始新项目吗？">
+        </div>
+
+        <button class="btn" onclick="startDivination()">🎲 开始占卜</button>
+        <button class="btn btn-secondary" onclick="toggleHistory()">📜 查看历史记录</button>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>正在摇卦中...</p>
+        </div>
+
+        <div class="result-section" id="result">
+            <h3 style="text-align: center; color: #667eea; margin-bottom: 20px;">📿 占卜结果</h3>
+            
+            <div class="yao-display" id="yaoDisplay"></div>
+
+            <div class="result-item">
+                <strong>🔮 卦象</strong>
+                <p id="hexagramName"></p>
+            </div>
+
+            <div class="result-item">
+                <strong>📖 解析</strong>
+                <p id="meaning"></p>
+            </div>
+
+            <div class="conclusion" id="conclusion"></div>
+        </div>
+
+        <div class="history-section" id="history">
+            <h3 style="color: #667eea; margin-bottom: 20px;">📜 历史记录</h3>
+            <div id="historyList"></div>
+        </div>
+
+        <div class="footer">
+            <p>本应用仅供娱乐和文化探索，请理性对待占卜结果</p>
+        </div>
+    </div>
+
+    <script>
+        // 八卦基本信息
+        const BAGUA = {
+            '111': { name: '乾', nature: '天', attr: '刚健' },
+            '000': { name: '坤', nature: '地', attr: '柔顺' },
+            '100': { name: '震', nature: '雷', attr: '动' },
+            '010': { name: '坎', nature: '水', attr: '险' },
+            '001': { name: '艮', nature: '山', attr: '止' },
+            '011': { name: '巽', nature: '风', attr: '入' },
+            '101': { name: '离', nature: '火', attr: '丽' },
+            '110': { name: '兑', nature: '泽', attr: '悦' }
+        };
+
+        // 64卦解析
+        const HEXAGRAM_MEANING = {
+            '乾乾': { name: '乾为天', conclusion: '大吉', meaning: '刚健中正，元亨利贞，事业可成', decision: '可以' },
+            '坤坤': { name: '坤为地', conclusion: '吉', meaning: '柔顺承载，厚德载物，顺势而为', decision: '可以' },
+            '震震': { name: '震为雷', conclusion: '中吉', meaning: '雷声震动，惊而不乱，有惊无险', decision: '可以' },
+            '坎坎': { name: '坎为水', conclusion: '凶', meaning: '险阻重重，需谨慎行事，暂缓为宜', decision: '不宜' },
+            '艮艮': { name: '艮为山', conclusion: '平', meaning: '静止等待，时机未到，宜守不宜攻', decision: '暂缓' },
+            '巽巽': { name: '巽为风', conclusion: '中吉', meaning: '顺势而入，随风潜入，循序渐进', decision: '可以' },
+            '离离': { name: '离为火', conclusion: '吉', meaning: '光明磊落，文明之象，前景光明', decision: '可以' },
+            '兑兑': { name: '兑为泽', conclusion: '吉', meaning: '喜悦和顺，有贵人相助，心想事成', decision: '可以' },
+            '乾坤': { name: '天地否', conclusion: '凶', meaning: '天地不交，闭塞不通，需等待时机', decision: '不可' },
+            '坤乾': { name: '地天泰', conclusion: '大吉', meaning: '天地交泰，万事亨通，正是良机', decision: '可以' },
+            '震坎': { name: '雷水解', conclusion: '中吉', meaning: '险难渐解，转危为安，耐心等待', decision: '可以' },
+            '坎震': { name: '水雷屯', conclusion: '平', meaning: '初始艰难，需积累力量，不宜急进', decision: '暂缓' },
+            '离坎': { name: '火水未济', conclusion: '平', meaning: '事未成功，仍需努力，谨慎前行', decision: '暂缓' },
+            '坎离': { name: '水火既济', conclusion: '吉', meaning: '水火相济，事已成功，保持谨慎', decision: '可以' },
+            '兑乾': { name: '泽天夬', conclusion: '中吉', meaning: '决断之时，刚决柔，正义必胜', decision: '可以' },
+            '乾兑': { name: '天泽履', conclusion: '中吉', meaning: '履险如夷，以礼待人，化险为夷', decision: '可以' },
+            '巽艮': { name: '风山渐', conclusion: '吉', meaning: '循序渐进，稳步发展，终得成功', decision: '可以' },
+            '艮巽': { name: '山风蛊', conclusion: '平', meaning: '积弊已久，需要整顿，祛除腐败', decision: '需改进' },
+            '震艮': { name: '雷山小过', conclusion: '平', meaning: '小事可为，大事不宜，谨小慎微', decision: '小事可' },
+            '艮震': { name: '山雷颐', conclusion: '吉', meaning: '颐养之道，修身养性，积蓄力量', decision: '可以' },
+            '离巽': { name: '火风鼎', conclusion: '大吉', meaning: '鼎新革故，大器成就，前途光明', decision: '可以' },
+            '巽离': { name: '风火家人', conclusion: '吉', meaning: '家庭和睦，内外有序，温暖如春', decision: '可以' },
+            '坤震': { name: '地雷复', conclusion: '吉', meaning: '复兴之象，否极泰来，迎来转机', decision: '可以' },
+            '震坤': { name: '雷地豫', conclusion: '吉', meaning: '和乐通达，心情愉悦，可以行动', decision: '可以' }
+        };
+
+        const DEFAULT_MEANINGS = {
+            '乾': { conclusion: '吉', decision: '可以' },
+            '坤': { conclusion: '中吉', decision: '可以' },
+            '震': { conclusion: '中吉', decision: '可以' },
+            '坎': { conclusion: '凶', decision: '不宜' },
+            '艮': { conclusion: '平', decision: '暂缓' },
+            '巽': { conclusion: '中吉', decision: '可以' },
+            '离': { conclusion: '吉', decision: '可以' },
+            '兑': { conclusion: '吉', decision: '可以' }
+        };
+
+        // 模拟抛铜钱
+        function castCoins() {
+            const coins = [
+                Math.random() > 0.5 ? 2 : 3,
+                Math.random() > 0.5 ? 2 : 3,
+                Math.random() > 0.5 ? 2 : 3
+            ];
+            const total = coins.reduce((a, b) => a + b, 0);
+
+            if (total === 6) return ['0', true];      // 老阴
+            else if (total === 7) return ['1', false]; // 少阳
+            else if (total === 8) return ['0', false]; // 少阴
+            else return ['1', true];                   // 老阳
+        }
+
+        // 执行占卜
+        function divine() {
+            const originalYao = [];
+            const changingPositions = [];
+
+            for (let i = 0; i < 6; i++) {
+                const [yao, isChanging] = castCoins();
+                originalYao.push(yao);
+                if (isChanging) {
+                    changingPositions.push(i + 1);
+                }
+            }
+
+            const changedYao = originalYao.map((yao, idx) => {
+                return changingPositions.includes(idx + 1) ? (yao === '1' ? '0' : '1') : yao;
+            });
+
+            return { originalYao, changedYao, changingPositions };
+        }
+
+        // 获取卦名
+        function getBaguaName(yaoList) {
+            const lower = yaoList.slice(0, 3).join('');
+            const upper = yaoList.slice(3, 6).join('');
+            
+            const lowerGua = BAGUA[lower] || { name: '未知' };
+            const upperGua = BAGUA[upper] || { name: '未知' };
+
+            return [lowerGua.name, upperGua.name];
+        }
+
+        // 解析卦象
+        function interpret(originalYao, changedYao, changingPositions) {
+            const [lowerOriginal, upperOriginal] = getBaguaName(originalYao);
+            const hexagramKey = upperOriginal + lowerOriginal;
+
+            let info;
+            if (HEXAGRAM_MEANING[hexagramKey]) {
+                info = HEXAGRAM_MEANING[hexagramKey];
+            } else {
+                const primary = DEFAULT_MEANINGS[upperOriginal] || { conclusion: '平', decision: '待观察' };
+                info = {
+                    name: `${upperOriginal}${lowerOriginal}`,
+                    conclusion: primary.conclusion,
+                    meaning: `${upperOriginal}卦在上，${lowerOriginal}卦在下，需综合分析`,
+                    decision: primary.decision
+                };
+            }
+
+            let changeNote = '';
+            if (changingPositions.length > 0) {
+                const [lowerChanged, upperChanged] = getBaguaName(changedYao);
+                const changedHexagramKey = upperChanged + lowerChanged;
+                
+                if (HEXAGRAM_MEANING[changedHexagramKey]) {
+                    const changedInfo = HEXAGRAM_MEANING[changedHexagramKey];
+                    changeNote = `<br><br>变卦为【${changedInfo.name}】，暗示${changedInfo.meaning}`;
+                } else {
+                    changeNote = `<br><br>变卦为【${upperChanged}${lowerChanged}】，事态将有变化`;
+                }
+            }
+
+            return {
+                hexagramName: info.name,
+                upperGua: upperOriginal,
+                lowerGua: lowerOriginal,
+                yaoSequence: originalYao.join(''),
+                changingPositions: changingPositions,
+                conclusion: info.conclusion,
+                meaning: info.meaning + changeNote,
+                decision: info.decision
+            };
+        }
+
+        // 显示爻象
+        function displayYao(yaoList, changingPositions) {
+            const yaoNames = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+            let html = '';
+
+            for (let i = 5; i >= 0; i--) {
+                const yao = yaoList[i];
+                const name = yaoNames[i];
+                const symbol = yao === '1' ? '━━━' : '━ ━';
+                const isChanging = changingPositions.includes(i + 1);
+
+                html += `
+                    <div class="yao-line">
+                        <span>${name}:</span>
+                        <span class="yao-symbol">${symbol}</span>
+                        ${isChanging ? '<span class="changing-mark">○ (变)</span>' : ''}
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        // 保存历史
+        function saveHistory(question, result) {
+            const history = JSON.parse(localStorage.getItem('chunfengHistory') || '[]');
+            history.push({
+                timestamp: new Date().toLocaleString('zh-CN'),
+                question: question || '未记录问题',
+                result: result
+            });
+            localStorage.setItem('chunfengHistory', JSON.stringify(history));
+        }
+
+        // 显示历史
+        function showHistory() {
+            const history = JSON.parse(localStorage.getItem('chunfengHistory') || '[]');
+            const historyList = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999;">暂无历史记录</p>';
+                return;
+            }
+
+            historyList.innerHTML = history.slice(-10).reverse().map(record => `
+                <div class="history-item">
+                    <div class="history-time">⏰ ${record.timestamp}</div>
+                    <div class="history-question">❓ ${record.question}</div>
+                    <div class="history-result">
+                        📿 ${record.result.hexagramName} | 
+                        🔮 ${record.result.conclusion} - ${record.result.decision}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 开始占卜
+        async function startDivination() {
+            const question = document.getElementById('question').value;
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const history = document.getElementById('history');
+
+            // 隐藏结果和历史
+            result.classList.remove('show');
+            history.classList.remove('show');
+
+            // 显示加载
+            loading.classList.add('show');
+
+            // 模拟摇卦过程
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // 执行占卜
+            const { originalYao, changedYao, changingPositions } = divine();
+            const interpretResult = interpret(originalYao, changedYao, changingPositions);
+
+            // 隐藏加载
+            loading.classList.remove('show');
+
+            // 显示结果
+            document.getElementById('yaoDisplay').innerHTML = displayYao(originalYao, changingPositions);
+            
+            let hexagramInfo = `【${interpretResult.hexagramName}】<br>`;
+            hexagramInfo += `上卦: ${interpretResult.upperGua} | 下卦: ${interpretResult.lowerGua}`;
+            if (interpretResult.changingPositions.length > 0) {
+                hexagramInfo += `<br>变爻: 第 ${interpretResult.changingPositions.join(', ')} 爻`;
+            }
+            document.getElementById('hexagramName').innerHTML = hexagramInfo;
+            
+            document.getElementById('meaning').innerHTML = interpretResult.meaning;
+            document.getElementById('conclusion').innerHTML = 
+                `${interpretResult.conclusion} - ${interpretResult.decision}`;
+
+            result.classList.add('show');
+
+            // 保存历史
+            saveHistory(question, interpretResult);
+        }
+
+        // 切换历史显示
+        function toggleHistory() {
+            const result = document.getElementById('result');
+            const history = document.getElementById('history');
+
+            result.classList.remove('show');
+
+            if (history.classList.contains('show')) {
+                history.classList.remove('show');
+            } else {
+                showHistory();
+                history.classList.add('show');
+            }
+        }
+    </script>
+</body>
+</html>
